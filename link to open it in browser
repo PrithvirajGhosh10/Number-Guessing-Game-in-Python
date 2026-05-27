@@ -1,3 +1,63 @@
-link to open it in browser
+#link to open it in browser
 
-http://127.0.0.1:5000/
+# link - http://127.0.0.1:5000/
+
+#code 
+
+from flask import Flask, request, session, render_template_string
+import random
+
+app = Flask(__name__)
+app.secret_key = "secret"
+
+HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+<title>Guess Game</title>
+</head>
+<body style="text-align:center;font-family:Arial;margin-top:50px;">
+<h1>Guess The Number</h1>
+<h3>Between 1 and 100</h3>
+
+<p>{{message}}</p>
+
+<form method="POST">
+<input type="number" name="guess" required>
+<button type="submit">Guess</button>
+</form>
+
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+
+    if "number" not in session:
+        session["number"] = random.randint(1, 100)
+        session["attempts"] = 0
+
+    message = ""
+
+    if request.method == "POST":
+
+        guess = int(request.form["guess"])
+        session["attempts"] += 1
+
+        if guess > session["number"]:
+            message = "Lower Number Please"
+
+        elif guess < session["number"]:
+            message = "Higher Number Please"
+
+        else:
+            message = f"Correct! You guessed in {session['attempts']} attempts."
+
+            session.pop("number")
+            session.pop("attempts")
+
+    return render_template_string(HTML, message=message)
+
+if __name__ == "__main__":
+    app.run(debug=True)
